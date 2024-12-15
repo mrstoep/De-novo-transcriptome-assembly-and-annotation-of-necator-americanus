@@ -2,29 +2,29 @@ process MMSEQS {
 
 
     input:
-    path input_file
+    path(transcriptome)
 
     output:
-    path "${output_dir}/*"
+    path("${output_dir}/mmseqs/thinned_assembly.fasta"), emit: thinned_assembly
 
     script:
     """
-    mkdir -p ${output_file}
+    mkdir -p ${params.outdir}/mmseqs
 
     #Creating mmseqs database
     singularity exec ${params.singularity_image6} mmseqs \
-        createdb ${input_file} ${output_dir}/assembly_db
+    createdb ${transcriptome} ${params.outdir}/mmseqs/assembly_db
    
     #Clustering the sequences
     singularity exec ${params.singularity_image6} mmseqs \
-        linclust ${output_dir}/assembly_db ${output_dir}/clustered_db tmp_dir --min-seq-id 0.95 -c 0.9
+    linclust ${params.outdir}/mmseqs/assembly_db ${params.outdir}/mmseqs/clustered_db tmp_dir --min-seq-id 0.95 -c 0.9
 
     #Extracting representative sequences
     singularity exec ${params.singularity_image6} mmseqs \
-        result2repseq ${output_dir}/assembly_db ${output_dir}/representative_db
+    result2repseq ${params.outdir}/mmseqs/assembly_db ${params.outdir}/mmseqs/representative_db
 
     #convertating representative_db into FASTA format
     singularity exec ${params.singularity_image6} mmseqs \
-        result2flat ${output_dir}/assembly_db ${output_dir}/thinned_assembly.fasta
+    result2flat ${params.outdir}/assembly_db ${params.outdir}/mmseqs/thinned_assembly.fasta
     """
 }

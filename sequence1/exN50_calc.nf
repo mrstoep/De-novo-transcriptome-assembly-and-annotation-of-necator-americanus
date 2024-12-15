@@ -1,14 +1,16 @@
 process EXN50 {
 
-
-    input:
-    path input_file
     
+    input:
+    path(transcriptome)
+    path(quant_file)
+     
+    
+    //output:
+    //path(exN50.txt)
+
     script:
     """
-    TrinityStats=/usr/local/bin/util/TrinityStats.pl
-
-    //added words like 
-    singularity exec ${params.singularity_image1} $TrinityStats perl $input_file1 --salmon $input_file2
+    singularity exec ${params.singularity_image1} ${params.trinity_stats} $transcriptome --salmon $quant_file > exN50.txt
     """
 }

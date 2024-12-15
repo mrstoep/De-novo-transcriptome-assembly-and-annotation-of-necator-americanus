@@ -1,36 +1,48 @@
 #!/usr/bin/env nextflow 
 
-include { FASTQC as rawfastqc; FASTQC as trimfastqc } from './fastqc3.nf'
-include { TRIMMOMATIC } from './trimmomatic3.nf'
-//include { multiqc } from "./multiqc3.nf"
-include { TRINITY } from './trinity3.nf'
-//include { EXN50 } from './exN50_3.nf'
+//include { FASTQC } from './fastqc.nf'
+//include { TRIMMOMATIC } from './trimmomatic.nf'
+//include { TRINITY } from './trinity.nf'
+//include { EXN50 } from './exN50_calc.nf'
+//include { BUSCO } from './busco.nf'
+//include { BOWTIE } from './bowtie.nf'
+//include { MMSEQS } from './mmseqs.nf'
+include { DIAMOND } from './annotation.nf'
 
-read_pairs_ch = Channel
-        .fromFilePairs(params.reads, checkIfExists:true)
+//steps 1 to 3
+unpaired_reads = Channel.fromPath(params.reads, checkIfExists:true)
+paired_reads = Channel.fromFilePairs(params.reads, checkIfExists:true)
+
+//Steps 4
+transcriptome = Channel.fromPath(params.transcriptome, checkIfExists:true)
+quant_file = Channel.fromPath(params.quant_file, checkIfExists:true)
+
+//step 8
+thinned_assembly = Channel.fromPath(params.thinned_assembly)
+diamond_db = Channel.fromPath(params.diamond_db)
 
 workflow {
-    //QC on raw reads
-    rawfastqc(read_pairs_ch)
+    //FASTQC
+    //FASTQC(unpaired_reads)
 
+    //TRIMMOMATIC
+    //TRIMMOMATIC(paired_reads)
 
-    //TRIMMOMATIC step
-    TRIMMOMATIC(read_pairs_ch)
-    trimfastqc(TRIMMOMATIC.out.paired_fastq)
+    //TRINITY
+    //TRINITY(TRIMMOMATIC.out.trimmed_reads)
+
+    //EXN50_calc
+    //EXN50(transcriptome, quant_file)
     
-    //multiqc_input = rawfastqc.out.fastqc_out
-     //.mix(trimfastqc.out.fastqc_out)
-     //.collect()
-    //TRINITY(multiqc_input) 
+    //BUSCO
+    //BUSCO(transcriptome)
 
-    //Trinity step
-    trinity_input = TRIMMOMATIC.out.paired_fastq
-    TRINITY(trinity_input)   
+    //BOWTIE
+    //BOWTIE(transcriptome, paired_reads)
 
-    /* EXN50 step
-    transcriptome = Channel.fromPath(params.transcriptome, checkIfExists:true)
-    quant_file = Channel.fromPath(params.quant_file, checkIfExists:true)
-    trinity_stats = Channel.fromPath(params.trinity_stats, checkIfExists:true)
+    //MMSEQS
+    MMSEQS(transcriptome)
 
-    EXN50(transcriptome, quant_file, trinity_stats) */
+    //DIAMOND
+    DIAMOND(thinned_assembly, diamond_db)
 }

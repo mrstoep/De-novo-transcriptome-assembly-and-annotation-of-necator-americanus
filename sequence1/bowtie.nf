@@ -2,26 +2,28 @@ process BOWTIE {
 
 
     input:
-    path input_file_data
-    path input_file_assembly
-    path bowtie_index_prefix
+    path(transcriptome)
+    tuple val(sample), path(reads)
 
     output:
     path "${output_file}/*"
+    path "bowtie.txt"
 
     script:
     """
-    mkdir -p ${output_file}
-    mkdir -p ${bowtie_index_prefix}
+    #Making directories
+    mkdir -p ${params.outdir}
+    mkdir -p ${params.outdir}/bowtie
+    mkdir -p ${params.outdir}/bowtie/index
 
     #Building index files
-    singularity exec ${params.singularity_image3} bowtie2-build ${input_file_assembly} ${bowtie_index_prefix}
+    singularity exec ${params.singularity_image3} bowtie2-build ${transcriptome} ${params.outdir}/bowtie/index
 
     #Running alignment
     singularity exec ${params.singularity_image3} bowtie2 \
-        -x ${bowtie_index_prefix} \
-        -1 ${input_file_data}/*1.fastq \
-        -2 ${input_file_data}/*2.fastq \
-        -S ${output_file}/alignment_output.sam
+        -x "${params.outdir}/bowtie/index" \
+        -1 ${reads[0]} \
+        -2 ${reads[1]} \
+        -S ${params.outdir}/bowtie/alignment_output.sam > bowtie.txt
     """
 }

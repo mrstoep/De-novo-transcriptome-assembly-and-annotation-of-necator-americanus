@@ -2,17 +2,18 @@ process BUSCO {
 
 
     input:
-    path input_file
+    path(transcriptome)
 
     output:
     path "${output_file}/*"
+    path "busco.txt"
 
     script:
     """
-    mkdir -p ${output_file}
+    mkdir -p ${params.outdir}/busco
 
     singularity exec ${params.singularity_image2} busco \
-        -i ${input_file} -o ${output_file} \
-        -f -l nematoda_odb10 -m transcriptome
+        -i ${transcriptome} -o "${params.outdir}/busco" \
+        -f -l nematoda_odb10 -m transcriptome > busco.txt
     """
 }
