@@ -6,7 +6,7 @@ process TRINITY {
 
     output:
     path("trinity.Trinity.fasta"), emit: assembly
-    path("$params.outdir}/trinity/salmon_outdir/quant.sf"), emit: quant
+    path("quant.sf"), emit: quant
 
     script:
     """

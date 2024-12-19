@@ -1,7 +1,7 @@
 process FASTQC {
 
     input:
-    tuple path(reads)
+    path(reads)
 
     output:
     path("*_fastqc.{zip,html}"), emit: fastqc_out 

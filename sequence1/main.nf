@@ -1,13 +1,13 @@
 #!/usr/bin/env nextflow 
 
-//include { FASTQC } from './fastqc.nf'
-//include { TRIMMOMATIC } from './trimmomatic.nf'
-//include { TRINITY } from './trinity.nf'
-//include { EXN50 } from './exN50_calc.nf'
-//include { BUSCO } from './busco.nf'
-//include { BOWTIE } from './bowtie.nf'
-//include { MMSEQS } from './mmseqs.nf'
-include { DIAMOND } from './annotation.nf'
+include { FASTQC } from './fastqc.nf'
+include { TRIMMOMATIC } from './trimmomatic.nf'
+include { TRINITY } from './trinity.nf'
+include { EXN50 } from './exN50_calc.nf'
+include { BUSCO } from './busco.nf'
+include { BOWTIE } from './bowtie.nf'
+include { MMSEQS } from './mmseqs.nf'
+
 
 //steps 1 to 3
 unpaired_reads = Channel.fromPath(params.reads, checkIfExists:true)
@@ -23,26 +23,23 @@ diamond_db = Channel.fromPath(params.diamond_db)
 
 workflow {
     //FASTQC
-    //FASTQC(unpaired_reads)
+    FASTQC(unpaired_reads)
 
     //TRIMMOMATIC
-    //TRIMMOMATIC(paired_reads)
+    TRIMMOMATIC(paired_reads)
 
     //TRINITY
-    //TRINITY(TRIMMOMATIC.out.trimmed_reads)
+    TRINITY(TRIMMOMATIC.out.trimmed_reads)
 
     //EXN50_calc
-    //EXN50(transcriptome, quant_file)
+    EXN50(TRINITY.out.assembly, TRINITY.out.quant)
     
     //BUSCO
-    //BUSCO(transcriptome)
+    BUSCO(TRINITY.out.assembly)
 
     //BOWTIE
-    //BOWTIE(transcriptome, paired_reads)
+    BOWTIE(TRINITY.out.assembly, paired_reads)
 
     //MMSEQS
-    MMSEQS(transcriptome)
-
-    //DIAMOND
-    DIAMOND(thinned_assembly, diamond_db)
+    MMSEQS(TRINITY.out.assembly) 
 }
